@@ -16,7 +16,6 @@ Contributions are highly encouraged and very welcome :)
     - [WHERE IN Clause](#where-in-clause)
 - [Performance](#performance)
     - [Temporarily Mark Entities as Read-Only at Runtime](#temporarily-mark-entities-as-read-only-at-runtime)
-    - [Flush Only a Single Entity](#flush-only-a-single-entity)
 
 ## DQL
 
