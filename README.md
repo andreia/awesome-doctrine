@@ -92,8 +92,3 @@ If you have a very large UnitOfWork but know that a large set of entities has no
 $entityManager->getUnitOfWork()->markReadOnly($entity)
 ```
 [[1]](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/unitofwork.html#how-doctrine-detects-changes)
-
-### Flush Only a Single Entity
-```php
-$entityManager->flush($entity)
-```
