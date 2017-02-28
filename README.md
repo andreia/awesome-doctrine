@@ -9,10 +9,12 @@ Contributions are highly encouraged and very welcome :)
 - [DQL](#dql)
     - [Defining a Column to be the Key of the Result Hydrated as Array](#defining-a-column-to-be-the-key-of-the-result-hydrated-as-array)
     - [Fetch Only Parts of an Entity](#fetch-only-parts-of-your-entities)
+    - [IN Clause in Raw SQL](#in-clause-in-raw-sql)
     - [INDEX BY in QueryBuilder](#index-by-in-querybuilder)
     - [Get Single Row or Null](#get-single-row-or-null)
     - [Ordering with Expressions](#ordering-with-expressions)
     - [Return Only a Value](#return-only-a-value)
+    - [Select Directly by Foreign Key Without Join the Foreign Table](#select-directly-by-foreign-key-without-join-the-foreign-table)
     - [WHERE IN Clause](#where-in-clause)
 - [Performance](#performance)
     - [Temporarily Mark Entities as Read-Only at Runtime](#temporarily-mark-entities-as-read-only-at-runtime)
@@ -32,6 +34,31 @@ $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
 ```sql
 SELECT partial b{id, title} FROM Book b
 ```
+
+### IN Clause in Raw SQL
+```sql
+$stmt = $this->getDoctrine()->getEntityManager()
+    ->getConnection()
+    ->prepare('SELECT t.id, t.name
+        FROM table t
+        WHERE t.id IN (:ids)');
+
+$stmt->bindValue('ids', array(1, 2, 3, 4, 5, 6), \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+$stmt->execute();
+```
+or
+```sql
+$stmt = $this->getDoctrine()->getEntityManager()
+    ->getConnection()
+    ->executeQuery('SELECT t.id, t.name
+        FROM table t
+        WHERE t.id IN (:ids)',
+        array('ids' => array(1, 2, 3, 4, 5, 6)),
+        array('ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)
+    )
+;
+```
+[[1]](http://docs.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/data-retrieval-and-manipulation.html#list-of-parameters-conversion)
 
 ### INDEX BY in QueryBuilder
 ```php
@@ -61,6 +88,19 @@ SELECT m, (m.comments + m.likes_count) AS HIDDEN score FROM Midia m ORDER BY sco
 ```sql
 $query = $entityManager->createQuery('SELECT COUNT(u.id) FROM User u');
 $count = $query->getSingleScalarResult();
+```
+
+### Select Directly by Foreign Key Without Join the Foreign Table
+```sql
+$q = $rep->createQueryBuilder('t')
+    ->where('IDENTITY(t.user) = :userId')
+    ->orderBy('t.id', 'DESC')
+    ->setParameter('userId', $id)
+    ->getQuery();
+```
+or
+```sql
+SELECT p FROM Product p WHERE IDENTITY(p.shop) = :shopId
 ```
 
 ### WHERE IN Clause
