@@ -17,6 +17,7 @@ Contributions are highly encouraged and very welcome :)
     - [Select Directly by Foreign Key Without Join the Foreign Table](#select-directly-by-foreign-key-without-join-the-foreign-table)
     - [WHERE IN Clause](#where-in-clause)
 - [Performance](#performance)
+    - [Bulk Update Using 'update' Statement Instead of Iterating Through Entities - Object Persisting](#bulk-update-using-update-statement-instead-of-iterating-through-entities-object-persisting)
     - [Temporarily Mark Entities as Read-Only at Runtime](#temporarily-mark-entities-as-read-only-at-runtime)
 
 ## DQL
@@ -124,6 +125,20 @@ $queryBuilder = $this
 ```
 
 ## Performance
+
+### Bulk Update Using 'update' Statement Instead of Iterating Through Entities - Object Persisting
+```php
+$em = $this->getDoctrine()->getManager();
+$repo = $em->getRepository('AppBundle:User');
+$active = true;
+
+$qb = $repo->createQueryBuilder('u');
+    $qb->update()
+        ->set('u.active', ':userActive')
+        ->setParameter('userActive', $active);
+
+$qb->getQuery()->execute();
+```
 
 ### Temporarily Mark Entities as Read-Only at Runtime
 If you have a very large UnitOfWork but know that a large set of entities has not changed, just mark them as read only.
