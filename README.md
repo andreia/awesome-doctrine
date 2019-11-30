@@ -202,6 +202,8 @@ class SomeClass
 
     function updateDatabase()
     {
+        // ...
+        
         try {
             $this->conn->beginTransaction(); 
             $this->conn->setAutoCommit(false);
