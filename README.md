@@ -19,6 +19,13 @@ Contributions are highly encouraged and very welcome :)
 - [Performance](#performance)
     - [Bulk Update Using 'update' Statement Instead of Iterating Through Entities - Object Persisting](#bulk-update-using-update-statement-instead-of-iterating-through-entities-object-persisting)
     - [Temporarily Mark Entities as Read-Only at Runtime](#temporarily-mark-entities-as-read-only-at-runtime)
+- [Raw SQL - DBAL](#raw-sql-dbal)
+    - [Update, Insert](#update-insert)
+    - [Query Data](#query-data)
+        - [Select with Parameters](#select-with-parameters)
+        - [Select with Named Parameters](#select-with-named-parameters)
+    - [Transaction](#transaction)
+    - [Truncate Table](#truncate-table)
 
 ## DQL
 
@@ -145,4 +152,83 @@ If you have a very large UnitOfWork but know that a large set of entities has no
 ```php
 $entityManager->getUnitOfWork()->markReadOnly($entity)
 ```
+## Raw SQL - DBAL
+
+### Update, Insert
+
+```php
+$count = $conn->executeUpdate('UPDATE user SET username = ? WHERE id = ?', array('andreia', 1));
+echo $count; // 1
+```
+
+### Query Data
+
+#### Select with Parameters
+
+```php
+$sql = "SELECT * FROM site WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bindValue(1, $id);
+$stmt->execute();
+$sites = $stmt->fetchAll();
+```
+
+#### Select with Named Parameters
+
+```php
+$sql = "SELECT * FROM user WHERE name = :name";
+$stmt = $conn->prepare($sql);
+$stmt->bindValue("name", $name);
+$stmt->execute();
+$users = $stmt->fetchArray();
+```
+### Transaction
+
+```php
+use Doctrine\DBAL\Connection;
+
+class SomeClass
+{
+    private $conn;
+
+    // ...
+
+    public function __construct(Connection $conn)
+    {
+        $this->conn = $conn;
+    }
+
+    // ...
+
+    function updateDatabase()
+    {
+        try {
+            $this->conn->beginTransaction(); 
+            $this->conn->setAutoCommit(false);
+
+            $this->conn->executeUpdate('INSERT INTO table1 (field1, field2, field3) VALUES(?, ?, ?)', [$field1, $field2, $field3]);
+            $this->conn->executeUpdate('INSERT INTO table2 (field1, field2) VALUES(?, ?)', [$field1, $field2]);
+
+            $this->conn->commit();
+        } catch (\Exception $e) {
+            // ...
+
+            $this->conn->rollback();
+        }
+    }
+
+    // ...
+}
+```
+
+### Truncate Table
+
+```php
+$platform = $this->conn->getDatabasePlatform();
+$this->conn->executeQuery('SET FOREIGN_KEY_CHECKS = 0;');
+$truncateSql = $platform->getTruncateTableSQL('table_name');
+$this->conn->executeUpdate($truncateSql);
+$this->conn->executeQuery('SET FOREIGN_KEY_CHECKS = 1;');
+```
+
 [[1]](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/unitofwork.html#how-doctrine-detects-changes)
