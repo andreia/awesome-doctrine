@@ -40,7 +40,7 @@ $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
 
 ### Fetch Only Parts of an Entity
 ```sql
-SELECT partial b{id, title} FROM Book b
+SELECT partial b.{id, title} FROM Book b
 ```
 
 ### IN Clause in Raw SQL
